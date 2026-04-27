@@ -11,8 +11,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { overflow-x: hidden; }
 body { font-family: 'DM Sans', sans-serif; background: #0a0b14; color: #e2e8f0; overflow-x: hidden; }
-h1, h2, h3, h4, h5 { font-family: 'Outfit', sans-serif; }
+#root { overflow-x: hidden; max-width: 100vw; }
+h1, h2, h3, h4, h5 { font-family: 'Outfit', sans-serif; word-wrap: break-word; overflow-wrap: break-word; }
 ::selection { background: #7c5cfc; color: white; }
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #0a0b14; }
@@ -37,6 +39,8 @@ h1, h2, h3, h4, h5 { font-family: 'Outfit', sans-serif; }
 .btn-primary:hover { background:#6a4ae8; transform:translateY(-2px); box-shadow:0 8px 30px rgba(124,92,252,0.25); }
 .btn-outline { display:inline-flex; align-items:center; gap:8px; padding:14px 32px; background:transparent; color:#7c5cfc; border:1.5px solid rgba(124,92,252,0.27); border-radius:12px; font-size:15px; font-weight:600; cursor:pointer; transition:all 0.3s; font-family:'DM Sans',sans-serif; }
 .btn-outline:hover { border-color:#7c5cfc; background:rgba(124,92,252,0.07); }
+.btn-ghost { display:inline-flex; align-items:center; gap:6px; padding:10px 20px; background:transparent; color:#94a3b8; border:1px solid #1e1f36; border-radius:10px; font-size:13px; font-weight:500; cursor:pointer; transition:all 0.3s; font-family:'DM Sans',sans-serif; }
+.btn-ghost:hover { color:#e2e8f0; border-color:#94a3b8; }
 
 .badge { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:100px; font-size:12px; font-weight:600; letter-spacing:0.5px; }
 .stat-card { background:#161726; border:1px solid #1e1f36; border-radius:12px; padding:20px; }
@@ -49,6 +53,27 @@ h1, h2, h3, h4, h5 { font-family: 'Outfit', sans-serif; }
 .input { width:100%; padding:14px 18px; background:#161726; border:1px solid #1e1f36; border-radius:12px; color:#e2e8f0; font-size:14px; font-family:'DM Sans',sans-serif; outline:none; transition:border-color 0.3s; }
 .input:focus { border-color:#7c5cfc; }
 .input::placeholder { color:#64748b; }
+
+/* ═══ RESPONSIVE ═══ */
+@media (max-width: 1024px) {
+  .section { padding: 60px 0; }
+  .card { padding: 24px; }
+}
+@media (max-width: 768px) {
+  .section { padding: 48px 0; }
+  .card { padding: 20px; border-radius: 12px; }
+  .btn-primary, .btn-outline { padding: 12px 24px; font-size: 14px; }
+  .stat-card { padding: 16px; }
+}
+@media (max-width: 480px) {
+  .container { padding: 0 16px; }
+  .section { padding: 40px 0; }
+  .badge { font-size: 10px !important; }
+}
+@media (max-width: 380px) {
+  .container { padding: 0 12px; }
+  .card { padding: 16px; }
+}
 </style>
 </head>
 <body>
@@ -65,6 +90,14 @@ const B = {
 };
 
 const NAV_ITEMS = ["Home","Platform","ROI","Solutions","Contact"];
+const CALENDLY = "https://calendly.com/roman-lu/30min";
+
+// ─── Responsive hook ───
+function useWindowWidth(){
+  const[w,setW]=useState(typeof window!=='undefined'?window.innerWidth:1200);
+  useEffect(()=>{const h=()=>setW(window.innerWidth);window.addEventListener("resize",h);return()=>window.removeEventListener("resize",h);},[]);
+  return w;
+}
 
 function AnimatedCounter({end,suffix="",prefix="",duration=2000}){
   const[count,setCount]=useState(0);const ref=useRef(null);const started=useRef(false);
@@ -81,24 +114,23 @@ function AnimatedCounter({end,suffix="",prefix="",duration=2000}){
 function FadeIn({children,delay=0,className=""}){
   const ref=useRef(null);const[visible,setVisible]=useState(false);
   useEffect(()=>{
-    const obs=new IntersectionObserver(([e])=>{if(e.isIntersecting)setVisible(true);},{threshold:0.15});
+    const obs=new IntersectionObserver(([e])=>{if(e.isIntersecting)setVisible(true);},{threshold:0.1});
     if(ref.current)obs.observe(ref.current);return()=>obs.disconnect();
   },[]);
-  return <div ref={ref} className={className} style={{opacity:visible?1:0,transform:visible?"translateY(0)":"translateY(32px)",transition:`opacity 0.7s ease ${delay}s, transform 0.7s ease ${delay}s`}}>{children}</div>;
+  return <div ref={ref} className={className} style={{opacity:visible?1:0,transform:visible?"translateY(0)":"translateY(24px)",transition:`opacity 0.7s ease ${delay}s, transform 0.7s ease ${delay}s`}}>{children}</div>;
 }
 
 function GridBackground(){
-  return <div style={{position:"fixed",inset:0,zIndex:0,overflow:"hidden",pointerEvents:"none"}}>
+  return <div style={{position:"fixed",inset:0,zIndex:0,overflow:"hidden",pointerEvents:"none",width:"100%",height:"100%"}}>
     <div style={{position:"absolute",inset:0,backgroundImage:`linear-gradient(${B.border} 1px, transparent 1px), linear-gradient(90deg, ${B.border} 1px, transparent 1px)`,backgroundSize:"64px 64px",opacity:0.3}}/>
-    <div style={{position:"absolute",top:"-30%",left:"50%",transform:"translateX(-50%)",width:"120vw",height:"120vw",borderRadius:"50%",background:`radial-gradient(circle, ${B.accentGlow} 0%, transparent 60%)`,opacity:0.4}}/>
-    <div style={{position:"absolute",bottom:"-50%",right:"-20%",width:"80vw",height:"80vw",borderRadius:"50%",background:"radial-gradient(circle, rgba(34,211,238,0.08) 0%, transparent 60%)"}}/>
+    <div style={{position:"absolute",top:"-30%",left:"-10%",width:"120%",height:"120%",borderRadius:"50%",background:`radial-gradient(circle, ${B.accentGlow} 0%, transparent 60%)`,opacity:0.4}}/>
   </div>;
 }
 
 function Sparkline({data,color,width=120,height=40}){
   const max=Math.max(...data),min=Math.min(...data),range=max-min||1;
   const points=data.map((v,i)=>`${(i/(data.length-1))*width},${height-((v-min)/range)*height}`).join(" ");
-  return <svg width={width} height={height} style={{display:"block"}}>
+  return <svg width={width} height={height} style={{display:"block",maxWidth:"100%"}}>
     <defs><linearGradient id={`sg-${color.replace("#","")}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity="0.3"/><stop offset="100%" stopColor={color} stopOpacity="0"/></linearGradient></defs>
     <polygon points={`0,${height} ${points} ${width},${height}`} fill={`url(#sg-${color.replace("#","")})`}/>
     <polyline points={points} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -129,6 +161,13 @@ function ProgressBar({value,label,color}){
   </div>;
 }
 
+// ─── Responsive grid helper ───
+function RGrid({cols="3",tabCols,mobCols="1",gap=24,children,style={}}){
+  const w=useWindowWidth();
+  const c = w<=480?(mobCols):w<=768?(tabCols||Math.min(2,parseInt(cols))):cols;
+  return <div style={{display:"grid",gridTemplateColumns:`repeat(${c}, 1fr)`,gap,...style}}>{children}</div>;
+}
+
 const Ico={
   control:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={B.accent} strokeWidth="1.5" strokeLinecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>,
   track:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={B.green} strokeWidth="1.5" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4m10-10h-4M6 12H2"/><path d="M17.66 6.34l-2.83 2.83m-5.66 5.66l-2.83 2.83m0-11.32l2.83 2.83m5.66 5.66l2.83 2.83"/></svg>,
@@ -144,63 +183,99 @@ const Ico={
 };
 
 function OrbitGraphic(){
-  return <div style={{position:"relative",width:360,height:360,margin:"0 auto"}}>
-    {[110,140,180].map((r,i)=><div key={i} style={{position:"absolute",top:"50%",left:"50%",width:r*2,height:r*2,borderRadius:"50%",border:`1px solid ${B.border}`,transform:"translate(-50%,-50%)"}}/>)}
-    <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:110,height:110,borderRadius:"50%",background:`linear-gradient(135deg, ${B.accent}, ${B.accentLight})`,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 0 60px ${B.accentGlow}`,animation:"glow 3s ease-in-out infinite"}}>
-      <span style={{fontFamily:"'Outfit'",fontWeight:700,fontSize:13,color:"white",letterSpacing:"0.5px"}}>Lucidity</span>
+  const w=useWindowWidth();
+  const s=w<=480?220:w<=768?280:360;
+  const orbits=w<=480?[70,90,115]:[110,140,180];
+  return <div style={{position:"relative",width:s,height:s,margin:"0 auto"}}>
+    {orbits.map((r,i)=><div key={i} style={{position:"absolute",top:"50%",left:"50%",width:r*2,height:r*2,borderRadius:"50%",border:`1px solid ${B.border}`,transform:"translate(-50%,-50%)"}}/>)}
+    <div style={{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%,-50%)",width:w<=480?80:110,height:w<=480?80:110,borderRadius:"50%",background:`linear-gradient(135deg, ${B.accent}, ${B.accentLight})`,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 0 60px ${B.accentGlow}`,animation:"glow 3s ease-in-out infinite"}}>
+      <span style={{fontFamily:"'Outfit'",fontWeight:700,fontSize:w<=480?10:13,color:"white",letterSpacing:"0.5px"}}>Lucidity</span>
     </div>
     {[{label:"Track",color:B.green,anim:"orbit 12s linear infinite"},{label:"Analyze",color:B.cyan,anim:"orbit2 16s linear infinite"},{label:"Manage",color:B.orange,anim:"orbit3 20s linear infinite"}].map((n,i)=>
       <div key={i} style={{position:"absolute",top:"50%",left:"50%",width:0,height:0,animation:n.anim}}>
-        <div style={{width:48,height:48,borderRadius:"50%",transform:"translate(-50%,-50%)",background:B.bgCard,border:`2px solid ${n.color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:600,color:n.color,letterSpacing:0.5}}>{n.label}</div>
+        <div style={{width:w<=480?36:48,height:w<=480?36:48,borderRadius:"50%",transform:"translate(-50%,-50%)",background:B.bgCard,border:`2px solid ${n.color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:w<=480?7:9,fontWeight:600,color:n.color,letterSpacing:0.5}}>{n.label}</div>
       </div>
     )}
   </div>;
 }
 
+// ═══════════════════════════════════════
+// NAV with mobile hamburger + Login
+// ═══════════════════════════════════════
 function Nav({active,setActive}){
   const[scrolled,setScrolled]=useState(false);
+  const[menuOpen,setMenuOpen]=useState(false);
+  const w=useWindowWidth();
+  const isMobile=w<=768;
   useEffect(()=>{const h=()=>setScrolled(window.scrollY>20);window.addEventListener("scroll",h);return()=>window.removeEventListener("scroll",h);},[]);
-  return <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:100,background:scrolled?`${B.bg}ee`:"transparent",backdropFilter:scrolled?"blur(20px)":"none",borderBottom:scrolled?`1px solid ${B.border}`:"1px solid transparent",transition:"all 0.4s ease"}}>
-    <div style={{maxWidth:1200,margin:"0 auto",padding:"0 24px",display:"flex",alignItems:"center",justifyContent:"space-between",height:72}}>
-      <div style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer"}} onClick={()=>setActive(0)}>
-        <div style={{width:36,height:36,borderRadius:10,background:`linear-gradient(135deg, ${B.accent}, ${B.accentLight})`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Outfit', sans-serif",fontWeight:800,fontSize:18,color:"white"}}>L</div>
-        <span style={{fontFamily:"'Outfit', sans-serif",fontWeight:700,fontSize:20,color:B.text,letterSpacing:"-0.5px"}}>Lucidity</span>
+  useEffect(()=>{if(!isMobile)setMenuOpen(false);},[isMobile]);
+
+  return <>
+    <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:100,background:scrolled||menuOpen?`${B.bg}ee`:"transparent",backdropFilter:scrolled||menuOpen?"blur(20px)":"none",borderBottom:scrolled?`1px solid ${B.border}`:"1px solid transparent",transition:"all 0.4s ease"}}>
+      <div style={{maxWidth:1200,margin:"0 auto",padding:isMobile?"0 16px":"0 24px",display:"flex",alignItems:"center",justifyContent:"space-between",height:64}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer"}} onClick={()=>{setActive(0);setMenuOpen(false);}}>
+          <div style={{width:32,height:32,borderRadius:8,background:`linear-gradient(135deg, ${B.accent}, ${B.accentLight})`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Outfit', sans-serif",fontWeight:800,fontSize:15,color:"white"}}>L</div>
+          <span style={{fontFamily:"'Outfit', sans-serif",fontWeight:700,fontSize:18,color:B.text,letterSpacing:"-0.5px"}}>Lucidity</span>
+        </div>
+
+        {!isMobile ? (
+          <div style={{display:"flex",gap:28,alignItems:"center"}}>
+            {NAV_ITEMS.map((item,i)=><button key={item} className={`nav-link${active===i?" active":""}`} onClick={()=>{setActive(i);window.scrollTo({top:0,behavior:"smooth"});}}>{item}</button>)}
+            <button className="btn-ghost" onClick={()=>window.open("https://lu.app","_blank")}>Log In</button>
+            <button className="btn-primary" style={{padding:"10px 24px",fontSize:13}} onClick={()=>window.open(CALENDLY,"_blank")}>Request Demo</button>
+          </div>
+        ) : (
+          <div style={{display:"flex",gap:10,alignItems:"center"}}>
+            <button className="btn-ghost" style={{padding:"8px 14px",fontSize:12}} onClick={()=>window.open("https://lu.app","_blank")}>Log In</button>
+            <button onClick={()=>setMenuOpen(!menuOpen)} style={{background:"none",border:"none",cursor:"pointer",padding:8}}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={B.text} strokeWidth="2" strokeLinecap="round">
+                {menuOpen?<><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>:<><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></>}
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
-      <div style={{display:"flex",gap:32,alignItems:"center"}}>
-        {NAV_ITEMS.map((item,i)=><button key={item} className={`nav-link${active===i?" active":""}`} onClick={()=>{setActive(i);window.scrollTo({top:0,behavior:"smooth"});}}>{item}</button>)}
-        <button className="btn-primary" style={{padding:"10px 24px",fontSize:13}}>Request Demo</button>
-      </div>
-    </div>
-  </nav>;
+    </nav>
+
+    {/* Mobile menu overlay */}
+    {isMobile && menuOpen && <div style={{position:"fixed",top:64,left:0,right:0,bottom:0,zIndex:99,background:`${B.bg}f5`,backdropFilter:"blur(20px)",display:"flex",flexDirection:"column",padding:"24px",gap:4}}>
+      {NAV_ITEMS.map((item,i)=><button key={item} onClick={()=>{setActive(i);setMenuOpen(false);window.scrollTo({top:0,behavior:"smooth"});}} style={{background:active===i?`${B.accent}15`:"transparent",border:"none",borderRadius:12,padding:"16px 20px",textAlign:"left",fontSize:17,fontWeight:active===i?700:500,color:active===i?B.text:B.textMuted,cursor:"pointer",fontFamily:"'DM Sans',sans-serif",transition:"all 0.2s"}}>
+        {item}
+      </button>)}
+      <div style={{marginTop:16,padding:"0 20px"}}><button className="btn-primary" style={{width:"100%",justifyContent:"center"}} onClick={()=>{setMenuOpen(false);window.open(CALENDLY,"_blank");}}>Request Demo</button></div>
+    </div>}
+  </>;
 }
 
 // ═══════════════════════════════════════
 // HOME
 // ═══════════════════════════════════════
 function HomePage(){
+  const w=useWindowWidth();
+  const isMob=w<=768;
   return <>
-    <section style={{minHeight:"100vh",display:"flex",alignItems:"center",position:"relative",zIndex:1,paddingTop:72}}>
-      <div className="container" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:80,alignItems:"center"}}>
-        <div>
-          <FadeIn><div className="badge" style={{background:B.accent+"15",color:B.accent,marginBottom:24}}><span style={{width:6,height:6,borderRadius:"50%",background:B.green,animation:"pulse 2s infinite"}}/>Enterprise Supply Chain Visibility Platform</div></FadeIn>
-          <FadeIn delay={0.1}><h1 style={{fontSize:56,fontWeight:800,lineHeight:1.08,letterSpacing:"-2px",marginBottom:24}}>Total Visibility.<br/><span style={{background:`linear-gradient(135deg, ${B.accent}, ${B.cyan})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Complete Control.</span></h1></FadeIn>
-          <FadeIn delay={0.2}><p style={{fontSize:18,color:B.textMuted,lineHeight:1.7,marginBottom:40,maxWidth:480}}>Real-time tracking and visibility across every shipment, carrier, and destination — paired with always-on performance analytics that give your team actionable intelligence the moment it matters.</p></FadeIn>
-          <FadeIn delay={0.3}><div style={{display:"flex",gap:16,marginBottom:48}}><button className="btn-primary">Schedule a Demo {Ico.arrow("white")}</button></div></FadeIn>
-          <FadeIn delay={0.4}><div style={{display:"flex",gap:40}}>
-            {[{val:"100",suf:"%",label:"Real-Time Visibility"},{val:"30",suf:"%",label:"Operational Efficiency Gained"},{val:"40",suf:"%",label:"Fewer Claims"}].map((s,i)=><div key={i}><div style={{fontSize:28,fontWeight:800,fontFamily:"'Outfit'",color:B.text}}>{s.val}{s.suf}</div><div style={{fontSize:12,color:B.textDim,marginTop:2}}>{s.label}</div></div>)}
+    <section style={{minHeight:isMob?"auto":"100vh",display:"flex",alignItems:"center",position:"relative",zIndex:1,paddingTop:isMob?80:72,paddingBottom:isMob?48:0}}>
+      <div className="container" style={{display:"grid",gridTemplateColumns:isMob?"1fr":"1fr 1fr",gap:isMob?40:80,alignItems:"center"}}>
+        <div style={{order:isMob?2:1}}>
+          <FadeIn><div className="badge" style={{background:B.accent+"15",color:B.accent,marginBottom:20,fontSize:isMob?10:12}}><span style={{width:6,height:6,borderRadius:"50%",background:B.green,animation:"pulse 2s infinite"}}/>{isMob?"Enterprise Visibility Platform":"Enterprise Supply Chain Visibility Platform"}</div></FadeIn>
+          <FadeIn delay={0.1}><h1 style={{fontSize:w<=480?30:isMob?36:w<=1024?44:56,fontWeight:800,lineHeight:1.08,letterSpacing:"-1.5px",marginBottom:20}}>Total Visibility.<br/><span style={{background:`linear-gradient(135deg, ${B.accent}, ${B.cyan})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Complete Control.</span></h1></FadeIn>
+          <FadeIn delay={0.2}><p style={{fontSize:isMob?15:18,color:B.textMuted,lineHeight:1.7,marginBottom:32,maxWidth:480}}>Real-time tracking and visibility across every shipment, carrier, and destination — paired with always-on performance analytics that give your team actionable intelligence the moment it matters.</p></FadeIn>
+          <FadeIn delay={0.3}><div style={{display:"flex",gap:16,marginBottom:36}}><button className="btn-primary" onClick={()=>window.open(CALENDLY,"_blank")}>Schedule a Demo {Ico.arrow("white")}</button></div></FadeIn>
+          <FadeIn delay={0.4}><div style={{display:"grid",gridTemplateColumns:w<=480?"1fr 1fr":"repeat(3, auto)",gap:isMob?16:40}}>
+            {[{val:"100",suf:"%",label:"Real-Time Visibility"},{val:"30",suf:"%",label:"Operational Efficiency Gained"},{val:"40",suf:"%",label:"Fewer Claims"}].map((s,i)=><div key={i}><div style={{fontSize:isMob?22:28,fontWeight:800,fontFamily:"'Outfit'",color:B.text}}>{s.val}{s.suf}</div><div style={{fontSize:11,color:B.textDim,marginTop:2}}>{s.label}</div></div>)}
           </div></FadeIn>
         </div>
-        <FadeIn delay={0.2}><OrbitGraphic/></FadeIn>
+        <FadeIn delay={0.2} className={isMob?"":""}><div style={{order:isMob?1:2}}><OrbitGraphic/></div></FadeIn>
       </div>
     </section>
 
     <section className="section"><div className="container">
-      <FadeIn><div style={{textAlign:"center",marginBottom:64}}>
+      <FadeIn><div style={{textAlign:"center",marginBottom:isMob?40:64}}>
         <div className="badge" style={{background:B.accent+"15",color:B.accent,margin:"0 auto 16px"}}>Core Capabilities</div>
-        <h2 style={{fontSize:42,fontWeight:800,letterSpacing:"-1.5px",marginBottom:16}}>One Platform. Every Supply Chain Function.</h2>
-        <p style={{fontSize:17,color:B.textMuted,maxWidth:620,margin:"0 auto"}}>Manage every mode of transportation, every carrier relationship, and every delivery across your entire network — unified in a single platform built for enterprise-scale logistics operations.</p>
+        <h2 style={{fontSize:isMob?28:42,fontWeight:800,letterSpacing:"-1.5px",marginBottom:16}}>One Platform. Every Supply Chain Function.</h2>
+        <p style={{fontSize:isMob?15:17,color:B.textMuted,maxWidth:620,margin:"0 auto"}}>Manage every mode of transportation, every carrier relationship, and every delivery across your entire network — unified in a single platform built for enterprise-scale logistics operations.</p>
       </div></FadeIn>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:24}}>
+      <RGrid cols="3" tabCols="2" mobCols="1" gap={isMob?16:24}>
         {[
           {icon:Ico.control,title:"Powerful Operations Dashboard",desc:"Interactive delivery map with live pins, linehaul route visualization, region overlays, and real-time status grids. See every delivery across your network at a glance.",color:B.accent},
           {icon:Ico.track,title:"Carton-Level Tracking",desc:"Five-stage scan timeline from Loaded through Delivered. Full chain of custody with barcode-level precision at every retail store location across every node.",color:B.green},
@@ -208,56 +283,56 @@ function HomePage(){
           {icon:Ico.claims,title:"Claims Management",desc:"End-to-end OSD exception workflow — file, dispute, and resolve claims with full audit trails, bulk actions, and rolling 6-month performance statistics.",color:B.orange},
           {icon:Ico.org,title:"Organization Management",desc:"Role-based access control, carrier/shipper partner onboarding, market and region configuration with interactive map-based boundary management.",color:B.accentLight},
           {icon:Ico.shield,title:"Data Integration",desc:"Seamless connectivity through REST API integrations, EDI file handling, and SFTP automation for continuous data feeds — plus CSV upload as a flexible backup option.",color:B.green},
-        ].map((cap,i)=><FadeIn key={i} delay={i*0.08}><div className="card" style={{height:"100%"}}>
-          <div style={{width:52,height:52,borderRadius:14,background:`${cap.color}12`,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:20}}>{cap.icon}</div>
-          <h3 style={{fontSize:18,fontWeight:700,marginBottom:10,letterSpacing:"-0.3px"}}>{cap.title}</h3>
+        ].map((cap,i)=><FadeIn key={i} delay={i*0.05}><div className="card" style={{height:"100%"}}>
+          <div style={{width:48,height:48,borderRadius:12,background:`${cap.color}12`,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:16}}>{cap.icon}</div>
+          <h3 style={{fontSize:17,fontWeight:700,marginBottom:8}}>{cap.title}</h3>
           <p style={{fontSize:14,color:B.textMuted,lineHeight:1.7}}>{cap.desc}</p>
         </div></FadeIn>)}
-      </div>
+      </RGrid>
     </div></section>
 
     <section className="section" style={{background:`linear-gradient(180deg, ${B.surface}, ${B.bg})`}}><div className="container">
-      <FadeIn><div style={{textAlign:"center",marginBottom:64}}>
-        <h2 style={{fontSize:42,fontWeight:800,letterSpacing:"-1.5px",marginBottom:16}}>Enterprise-Grade Intelligence</h2>
-        <p style={{fontSize:17,color:B.textMuted,maxWidth:550,margin:"0 auto"}}>Real-time metrics and analytics that scale with your operation.</p>
+      <FadeIn><div style={{textAlign:"center",marginBottom:isMob?40:64}}>
+        <h2 style={{fontSize:isMob?28:42,fontWeight:800,letterSpacing:"-1.5px",marginBottom:16}}>Enterprise-Grade Intelligence</h2>
+        <p style={{fontSize:isMob?15:17,color:B.textMuted,maxWidth:550,margin:"0 auto"}}>Real-time metrics and analytics that scale with your operation.</p>
       </div></FadeIn>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:20}}>
+      <RGrid cols="3" tabCols="3" mobCols="1" gap={isMob?16:20}>
         {[
           {label:"Shipments Tracked",val:2400000,suf:"+",spark:[20,35,28,45,52,48,65,72,68,85,92],color:B.accent},
           {label:"Claims Resolved",val:98,suf:"%",spark:[88,90,91,93,94,95,96,97,97,98,98],color:B.orange},
           {label:"Avg Scan Accuracy",val:99,suf:".7%",spark:[96,97,97,98,98,99,99,99,99,99,99],color:B.cyan},
         ].map((m,i)=><FadeIn key={i} delay={i*0.1}><div className="stat-card">
           <div style={{fontSize:12,color:B.textDim,marginBottom:8,textTransform:"uppercase",letterSpacing:1}}>{m.label}</div>
-          <div style={{fontSize:32,fontWeight:800,fontFamily:"'Outfit'",color:m.color,marginBottom:12}}><AnimatedCounter end={m.val} suffix={m.suf}/></div>
+          <div style={{fontSize:isMob?26:32,fontWeight:800,fontFamily:"'Outfit'",color:m.color,marginBottom:12}}><AnimatedCounter end={m.val} suffix={m.suf}/></div>
           <Sparkline data={m.spark} color={m.color}/>
         </div></FadeIn>)}
-      </div>
+      </RGrid>
     </div></section>
 
     <section className="section"><div className="container">
-      <FadeIn><div style={{textAlign:"center",marginBottom:64}}>
-        <h2 style={{fontSize:42,fontWeight:800,letterSpacing:"-1.5px",marginBottom:16}}>Dedicated Engineered Implementation</h2>
-        <p style={{fontSize:17,color:B.textMuted,maxWidth:550,margin:"0 auto"}}>From initial discovery to full deployment, our implementation team engineers your Lucidity environment for maximum operational impact.</p>
+      <FadeIn><div style={{textAlign:"center",marginBottom:isMob?40:64}}>
+        <h2 style={{fontSize:isMob?28:42,fontWeight:800,letterSpacing:"-1.5px",marginBottom:16}}>Dedicated Engineered Implementation</h2>
+        <p style={{fontSize:isMob?15:17,color:B.textMuted,maxWidth:550,margin:"0 auto"}}>From initial discovery to full deployment, our implementation team engineers your Lucidity environment for maximum operational impact.</p>
       </div></FadeIn>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4, 1fr)",gap:32}}>
+      <RGrid cols="4" tabCols="2" mobCols="2" gap={isMob?16:32}>
         {[
           {step:"01",title:"Discovery & Scoping",desc:"Map your carrier network, identify integration touchpoints, define KPIs and reporting requirements across all nodes."},
           {step:"02",title:"Network Configuration",desc:"Configure regions, markets, carrier partnerships, role-based access, and data integration mappings for your operation."},
           {step:"03",title:"Integration & Testing",desc:"Connect API feeds, configure EDI handling, validate data accuracy, and test scan workflows end-to-end across your distribution network."},
           {step:"04",title:"Launch & Optimization",desc:"Go live with full visibility, carrier scorecards, claims workflows, and continuous performance tuning."},
-        ].map((s,i)=><FadeIn key={i} delay={i*0.1}><div style={{textAlign:"center"}}>
-          <div style={{width:64,height:64,borderRadius:16,margin:"0 auto 20px",background:`linear-gradient(135deg, ${B.accent}20, ${B.accent}05)`,border:`1px solid ${B.accent}30`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Outfit'",fontWeight:800,fontSize:22,color:B.accent}}>{s.step}</div>
-          <h3 style={{fontSize:17,fontWeight:700,marginBottom:8}}>{s.title}</h3>
-          <p style={{fontSize:13,color:B.textMuted,lineHeight:1.7}}>{s.desc}</p>
+        ].map((s,i)=><FadeIn key={i} delay={i*0.08}><div style={{textAlign:"center"}}>
+          <div style={{width:56,height:56,borderRadius:14,margin:"0 auto 16px",background:`linear-gradient(135deg, ${B.accent}20, ${B.accent}05)`,border:`1px solid ${B.accent}30`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Outfit'",fontWeight:800,fontSize:20,color:B.accent}}>{s.step}</div>
+          <h3 style={{fontSize:15,fontWeight:700,marginBottom:6}}>{s.title}</h3>
+          <p style={{fontSize:12,color:B.textMuted,lineHeight:1.6}}>{s.desc}</p>
         </div></FadeIn>)}
-      </div>
+      </RGrid>
     </div></section>
 
     <section className="section"><div className="container"><FadeIn>
-      <div style={{background:`linear-gradient(135deg, ${B.accent}15, ${B.bgCard})`,border:`1px solid ${B.accent}30`,borderRadius:24,padding:64,textAlign:"center"}}>
-        <h2 style={{fontSize:38,fontWeight:800,letterSpacing:"-1px",marginBottom:16}}>Ready for Total Visibility?</h2>
-        <p style={{fontSize:17,color:B.textMuted,maxWidth:520,margin:"0 auto 32px"}}>See how Lucidity replaces fragmented legacy tools with a unified enterprise visibility platform — purpose-built for the way modern supply chains actually operate.</p>
-        <button className="btn-primary" style={{padding:"16px 40px",fontSize:16}}>Get Started {Ico.arrow("white")}</button>
+      <div style={{background:`linear-gradient(135deg, ${B.accent}15, ${B.bgCard})`,border:`1px solid ${B.accent}30`,borderRadius:isMob?16:24,padding:w<=480?24:isMob?32:64,textAlign:"center"}}>
+        <h2 style={{fontSize:isMob?26:38,fontWeight:800,letterSpacing:"-1px",marginBottom:16}}>Ready for Total Visibility?</h2>
+        <p style={{fontSize:isMob?14:17,color:B.textMuted,maxWidth:520,margin:"0 auto 32px"}}>See how Lucidity replaces fragmented legacy tools with a unified enterprise visibility platform — purpose-built for the way modern supply chains actually operate.</p>
+        <button className="btn-primary" style={{padding:isMob?"14px 32px":"16px 40px",fontSize:isMob?14:16}} onClick={()=>window.open(CALENDLY,"_blank")}>Get Started {Ico.arrow("white")}</button>
       </div>
     </FadeIn></div></section>
   </>;
@@ -267,83 +342,82 @@ function HomePage(){
 // PLATFORM
 // ═══════════════════════════════════════
 function PlatformPage(){
+  const w=useWindowWidth();const isMob=w<=768;
   const[activeTab,setActiveTab]=useState(0);
   const features=[
-    {tab:"Operations Dashboard",title:"Real-Time Supply Chain Visibility Hub",desc:"The Lucidity Dashboard is your at-a-glance view of all delivery activity across your entire network. An interactive map displays every delivery as a color-coded pin — green for completed, orange for in-progress, black for planned — with linehaul routes drawn between stations and region boundaries as shaded overlays.",
+    {tab:"Dashboard",title:"Real-Time Supply Chain Visibility Hub",desc:"The Lucidity Dashboard is your at-a-glance view of all delivery activity across your entire network. An interactive map displays every delivery as a color-coded pin — green for completed, orange for in-progress, black for planned — with linehaul routes drawn between stations and region boundaries as shaded overlays.",
       details:["Interactive map with zoom, pan, and fullscreen controls","Color-coded pins by delivery status with click-to-inspect cards","Linehaul route visualization with truck position indicators","Three-column status grid: Planned, In Progress, Completed","Delivery detail drawer with stats, proof of delivery, and shipment tables","Region boundary overlays with labeled delivery zones"],
-      metrics:[{label:"Live Deliveries Visible",value:"100%",color:B.green},{label:"Map Refresh Rate",value:"<5s",color:B.accent},{label:"Network Coverage",value:"Full",color:B.cyan}]},
-    {tab:"Outbound Loads",title:"End-to-End Load Tracking & Exception Management",desc:"Monitor every load from your distribution center to destination stations with the two-panel Outbound Loads view. A sidebar of load cards lets you toggle between Active and Completed loads, while the detail panel shows shipment tracking, store-level scan progress, and exception summary cards for overages, shortages, and damages.",
+      metrics:[{label:"Live Deliveries",value:"100%",color:B.green},{label:"Refresh Rate",value:"<5s",color:B.accent},{label:"Coverage",value:"Full",color:B.cyan}]},
+    {tab:"Outbound",title:"End-to-End Load Tracking & Exception Management",desc:"Monitor every load from your distribution center to destination stations. Toggle between Active and Completed loads, with store-level scan progress, and exception summary cards for overages, shortages, and damages.",
       details:["Load lifecycle: Building → Ready to Load → Loading → In Transit → Completed","Accuracy calculated as Expected / (Expected + Overages + Shortages)","Per-store scan progress bars with delivered, unscanned, and exception counts","OSD exception cards: Overages, Shortages, Damages with full shipment detail","Sortable shipment tables with tracking ID, weight, scan stage, and status","Previous scan history and re-scan capability for dispute resolution"],
-      metrics:[{label:"Data Match Rate",value:"99.2%",color:B.green},{label:"Exception Detection",value:"Real-time",color:B.orange},{label:"Load Statuses",value:"8 Stages",color:B.accent}]},
-    {tab:"Shipment Search",title:"Instant Shipment Lookup & Scan Timeline",desc:"Look up any shipment by tracking ID or BOL number — individually or in bulk. Each result card displays the full delivery address, weight, and a five-stage visual scan timeline: Loaded → Unloaded → Integrity Check → Out for Delivery → Delivered. Export results to CSV for offline analysis.",
+      metrics:[{label:"Match Rate",value:"99.2%",color:B.green},{label:"Exceptions",value:"Real-time",color:B.orange},{label:"Statuses",value:"8 Stages",color:B.accent}]},
+    {tab:"Search",title:"Instant Shipment Lookup & Scan Timeline",desc:"Look up any shipment by tracking ID or BOL number — individually or in bulk. Each result card displays the full delivery address, weight, and a five-stage visual scan timeline.",
       details:["Bulk search: paste multiple tracking IDs or BOLs, comma or line-separated","Five-stage visual scan timeline with filled/hollow stage indicators","Each scan records a timestamp and 'scanned by' user identifier","Direct link to Dispatch tab for carrier users with active deliveries","One-click CSV export with store, tracking ID, scan count, and timestamps","Collapsible search card to maximize result viewing area"],
-      metrics:[{label:"Search Response",value:"<1s",color:B.cyan},{label:"Scan Stages",value:"5",color:B.accent},{label:"Export Formats",value:"CSV",color:B.green}]},
-    {tab:"Claims & Disputes",title:"Full-Lifecycle Claim Resolution Workflow",desc:"Manage shipment exception claims from detection to resolution. Shippers file claims, review disputes, and confirm payments. Carriers accept or dispute with full audit trails. The system tracks claims through Eligible → Filed → Disputed → Awaiting Payment → Resolved.",
-      details:["Carrier selection view with 6-month claim statistics per carrier","Filter by date range, claim type, unresolved toggle, and tracking ID search","Claims grouped by load with trailer ID, induction date, and market","Color-coded status badges: Blue (Eligible), Filed, Disputed, Awaiting Payment, Resolved","Scan event timeline and full resolution audit trail per claim","Bulk actions: file, accept, and resolve multiple claims simultaneously"],
-      metrics:[{label:"Avg Resolution",value:"48hrs",color:B.orange},{label:"Claim Statuses",value:"5 Stages",color:B.accent},{label:"Carrier Metrics",value:"6-Month",color:B.green}]},
-    {tab:"Organization",title:"Enterprise Administration & Network Configuration",desc:"The Organization tab is your administrative hub. Manage users with role-based access control (Admin, Driver, Warehouse), onboard carrier and shipper partners with invite codes, and define delivery markets with interactive map-based region and store management.",
+      metrics:[{label:"Response",value:"<1s",color:B.cyan},{label:"Stages",value:"5",color:B.accent},{label:"Export",value:"CSV",color:B.green}]},
+    {tab:"Claims",title:"Full-Lifecycle Claim Resolution Workflow",desc:"Manage shipment exception claims from detection to resolution. The system tracks claims through Eligible → Filed → Disputed → Awaiting Payment → Resolved with full audit trails.",
+      details:["Carrier selection view with 6-month claim statistics per carrier","Filter by date range, claim type, unresolved toggle, and tracking ID search","Claims grouped by load with trailer ID, induction date, and market","Color-coded status badges: Eligible, Filed, Disputed, Awaiting Payment, Resolved","Scan event timeline and full resolution audit trail per claim","Bulk actions: file, accept, and resolve multiple claims simultaneously"],
+      metrics:[{label:"Resolution",value:"48hrs",color:B.orange},{label:"Statuses",value:"5",color:B.accent},{label:"Metrics",value:"6-Month",color:B.green}]},
+    {tab:"Organization",title:"Enterprise Administration & Network Configuration",desc:"Manage users with role-based access control, onboard carrier and shipper partners with invite codes, and define delivery markets with interactive map-based region and store management.",
       details:["User management with single add, bulk CSV invite, and deactivation","Role-based access: Admin, Driver, Warehouse with color-coded badges","Carrier/shipper partner onboarding with invite codes and region assignment","Interactive map for region boundary creation and store assignment","Store grid with reference IDs, addresses, and region associations","Activity tracking with last login timestamps and registration dates"],
-      metrics:[{label:"User Roles",value:"3+",color:B.accentLight},{label:"Partner Mgmt",value:"Bi-directional",color:B.accent},{label:"Region Config",value:"Map-Based",color:B.green}]},
+      metrics:[{label:"Roles",value:"3+",color:B.accentLight},{label:"Partners",value:"Bi-dir",color:B.accent},{label:"Regions",value:"Map",color:B.green}]},
   ];
   const f=features[activeTab];
-  return <section style={{paddingTop:120,minHeight:"100vh",position:"relative",zIndex:1}}><div className="container">
-    <FadeIn><div style={{textAlign:"center",marginBottom:48}}>
+  return <section style={{paddingTop:isMob?80:120,minHeight:"100vh",position:"relative",zIndex:1}}><div className="container">
+    <FadeIn><div style={{textAlign:"center",marginBottom:isMob?32:48}}>
       <div className="badge" style={{background:B.accent+"15",color:B.accent,margin:"0 auto 16px"}}>Platform Deep Dive</div>
-      <h2 style={{fontSize:46,fontWeight:800,letterSpacing:"-1.5px",marginBottom:16}}>Every Module. Every Capability.</h2>
-      <p style={{fontSize:17,color:B.textMuted,maxWidth:580,margin:"0 auto"}}>Explore the full breadth of Lucidity's enterprise supply chain visibility platform.</p>
+      <h2 style={{fontSize:isMob?28:46,fontWeight:800,letterSpacing:"-1.5px",marginBottom:16}}>Every Module. Every Capability.</h2>
+      <p style={{fontSize:isMob?15:17,color:B.textMuted,maxWidth:580,margin:"0 auto"}}>Explore the full breadth of Lucidity's enterprise supply chain visibility platform.</p>
     </div></FadeIn>
-    <div style={{display:"flex",gap:10,justifyContent:"center",marginBottom:48,flexWrap:"wrap"}}>
-      {features.map((ft,i)=><button key={i} className={`tab-btn${activeTab===i?" active":""}`} onClick={()=>setActiveTab(i)}>{ft.tab}</button>)}
+    <div style={{display:"flex",gap:8,justifyContent:isMob?"flex-start":"center",marginBottom:isMob?32:48,overflowX:"auto",WebkitOverflowScrolling:"touch",paddingBottom:isMob?8:0,msOverflowStyle:"none",scrollbarWidth:"none"}}>
+      {features.map((ft,i)=><button key={i} className={`tab-btn${activeTab===i?" active":""}`} onClick={()=>setActiveTab(i)} style={{whiteSpace:"nowrap",fontSize:isMob?12:13,flexShrink:0}}>{ft.tab}</button>)}
     </div>
     <div key={activeTab} style={{animation:"slideIn 0.4s ease"}}>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:48,marginBottom:48}}>
+      <div style={{display:"grid",gridTemplateColumns:isMob?"1fr":"1fr 1fr",gap:isMob?24:48,marginBottom:48}}>
         <div>
-          <h3 style={{fontSize:30,fontWeight:800,letterSpacing:"-1px",marginBottom:16}}>{f.title}</h3>
-          <p style={{fontSize:15,color:B.textMuted,lineHeight:1.8,marginBottom:32}}>{f.desc}</p>
-          <div style={{display:"flex",gap:20}}>
-            {f.metrics.map((m,i)=><div key={i} className="stat-card" style={{flex:1,textAlign:"center"}}><div style={{fontSize:22,fontWeight:800,fontFamily:"'Outfit'",color:m.color}}>{m.value}</div><div style={{fontSize:11,color:B.textDim,marginTop:4}}>{m.label}</div></div>)}
+          <h3 style={{fontSize:isMob?22:30,fontWeight:800,letterSpacing:"-1px",marginBottom:16}}>{f.title}</h3>
+          <p style={{fontSize:isMob?14:15,color:B.textMuted,lineHeight:1.8,marginBottom:24}}>{f.desc}</p>
+          <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
+            {f.metrics.map((m,i)=><div key={i} className="stat-card" style={{flex:1,minWidth:80,textAlign:"center"}}><div style={{fontSize:isMob?18:22,fontWeight:800,fontFamily:"'Outfit'",color:m.color}}>{m.value}</div><div style={{fontSize:10,color:B.textDim,marginTop:4}}>{m.label}</div></div>)}
           </div>
         </div>
         <div className="card" style={{padding:0,overflow:"hidden"}}>
-          <div style={{padding:24,borderBottom:`1px solid ${B.border}`}}>
-            <div style={{display:"flex",gap:6,marginBottom:16}}><div style={{width:10,height:10,borderRadius:"50%",background:"#ef4444"}}/><div style={{width:10,height:10,borderRadius:"50%",background:"#f59e0b"}}/><div style={{width:10,height:10,borderRadius:"50%",background:"#22c55e"}}/></div>
-            <div style={{display:"flex",alignItems:"center",gap:8}}><div style={{width:8,height:8,borderRadius:"50%",background:B.green,animation:"pulse 2s infinite"}}/><span style={{fontSize:12,color:B.textDim}}>lu.app/{f.tab.toLowerCase().replace(/ & /g,"-").replace(/ /g,"-")}</span></div>
+          <div style={{padding:isMob?16:24,borderBottom:`1px solid ${B.border}`}}>
+            <div style={{display:"flex",gap:6,marginBottom:12}}><div style={{width:10,height:10,borderRadius:"50%",background:"#ef4444"}}/><div style={{width:10,height:10,borderRadius:"50%",background:"#f59e0b"}}/><div style={{width:10,height:10,borderRadius:"50%",background:"#22c55e"}}/></div>
+            <div style={{display:"flex",alignItems:"center",gap:8}}><div style={{width:8,height:8,borderRadius:"50%",background:B.green,animation:"pulse 2s infinite"}}/><span style={{fontSize:11,color:B.textDim}}>lu.app/{f.tab.toLowerCase().replace(/ /g,"-")}</span></div>
           </div>
-          <div style={{padding:24}}>
-            {f.details.map((d,i)=><div key={i} style={{display:"flex",gap:12,alignItems:"flex-start",padding:"10px 0",borderBottom:i<f.details.length-1?`1px solid ${B.border}`:"none",animation:`slideIn 0.4s ease ${i*0.06}s both`}}>
-              <div style={{marginTop:2}}>{Ico.check}</div><span style={{fontSize:13,color:B.textMuted,lineHeight:1.6}}>{d}</span>
+          <div style={{padding:isMob?16:24}}>
+            {f.details.map((d,i)=><div key={i} style={{display:"flex",gap:10,alignItems:"flex-start",padding:"8px 0",borderBottom:i<f.details.length-1?`1px solid ${B.border}`:"none",animation:`slideIn 0.4s ease ${i*0.06}s both`}}>
+              <div style={{marginTop:2,flexShrink:0}}>{Ico.check}</div><span style={{fontSize:isMob?12:13,color:B.textMuted,lineHeight:1.6}}>{d}</span>
             </div>)}
           </div>
         </div>
       </div>
     </div>
 
-    <div style={{marginTop:80}}><FadeIn><h3 style={{fontSize:30,fontWeight:800,letterSpacing:"-1px",marginBottom:40,textAlign:"center"}}>Platform Architecture</h3></FadeIn>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:20}}>
+    <div style={{marginTop:isMob?48:80}}><FadeIn><h3 style={{fontSize:isMob?24:30,fontWeight:800,letterSpacing:"-1px",marginBottom:32,textAlign:"center"}}>Platform Architecture</h3></FadeIn>
+      <RGrid cols="3" tabCols="3" mobCols="1" gap={isMob?16:20}>
         {[
           {title:"Data Ingestion",items:["REST API Integrations","EDI File Handling","SFTP Automation","CSV Upload (Backup)","Bulk Processing"],color:B.accent},
           {title:"Intelligence Layer",items:["Scan Timeline Engine","Exception Detection","Accuracy Scoring","Performance Analytics","Real-Time Dashboards"],color:B.cyan},
           {title:"Action & Resolution",items:["Claims Workflow","Carrier Scorecards","Proof of Delivery","CSV Export & Reporting","Role-Based Access"],color:B.green}
-        ].map((col,i)=>
-          <FadeIn key={i} delay={i*0.1}><div className="card"><h4 style={{fontSize:16,fontWeight:700,marginBottom:16,color:col.color}}>{col.title}</h4>
-            {col.items.map((item,j)=><div key={j} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0"}}><div style={{width:6,height:6,borderRadius:"50%",background:col.color}}/><span style={{fontSize:13,color:B.textMuted}}>{item}</span></div>)}
-          </div></FadeIn>
-        )}
-      </div>
+        ].map((col,i)=><FadeIn key={i} delay={i*0.1}><div className="card"><h4 style={{fontSize:15,fontWeight:700,marginBottom:14,color:col.color}}>{col.title}</h4>
+          {col.items.map((item,j)=><div key={j} style={{display:"flex",alignItems:"center",gap:10,padding:"7px 0"}}><div style={{width:6,height:6,borderRadius:"50%",background:col.color,flexShrink:0}}/><span style={{fontSize:13,color:B.textMuted}}>{item}</span></div>)}
+        </div></FadeIn>)}
+      </RGrid>
     </div>
 
-    <div style={{marginTop:80,marginBottom:80}}><FadeIn>
-      <div className="card" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:48,alignItems:"center"}}>
+    <div style={{marginTop:isMob?48:80,marginBottom:isMob?48:80}}><FadeIn>
+      <div className="card" style={{display:"grid",gridTemplateColumns:isMob?"1fr":"1fr 1fr",gap:isMob?32:48,alignItems:"center"}}>
         <div>
-          <h3 style={{fontSize:26,fontWeight:800,letterSpacing:"-0.5px",marginBottom:16}}>Universal Carrier Connectivity</h3>
-          <p style={{fontSize:14,color:B.textMuted,lineHeight:1.8,marginBottom:24}}>Lucidity connects across your entire carrier network — regardless of mode, size, or technology maturity. Our dedicated implementation engineering team handles every integration through API connections, EDI file handling, or SFTP feeds so your operations team never has to.</p>
+          <h3 style={{fontSize:isMob?22:26,fontWeight:800,letterSpacing:"-0.5px",marginBottom:16}}>Universal Carrier Connectivity</h3>
+          <p style={{fontSize:14,color:B.textMuted,lineHeight:1.8,marginBottom:24}}>Lucidity connects across your entire carrier network — regardless of mode, size, or technology maturity. Our dedicated implementation engineering team handles every integration through API connections, EDI file handling, or SFTP feeds.</p>
           <ProgressBar value={99} label="Carrier Onboarding Success" color={B.green}/>
           <ProgressBar value={97} label="API & EDI Integration Rate" color={B.accent}/>
           <ProgressBar value={95} label="Data Feed Uptime" color={B.cyan}/>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:12}}>
-          {["LTL","FTL","Parcel","Final Mile","White Glove","Intermodal","Drayage","Pool Dist.","Linehaul"].map((mode,i)=><div key={i} style={{background:B.surface,border:`1px solid ${B.border}`,borderRadius:10,padding:"16px 12px",textAlign:"center",fontSize:12,fontWeight:600,color:B.textMuted}}>{mode}</div>)}
-        </div>
+        <RGrid cols="3" tabCols="3" mobCols="3" gap={10}>
+          {["LTL","FTL","Parcel","Final Mile","White Glove","Intermodal","Drayage","Pool Dist.","Linehaul"].map((mode,i)=><div key={i} style={{background:B.surface,border:`1px solid ${B.border}`,borderRadius:10,padding:"14px 8px",textAlign:"center",fontSize:11,fontWeight:600,color:B.textMuted}}>{mode}</div>)}
+        </RGrid>
       </div>
     </FadeIn></div>
   </div></section>;
@@ -353,79 +427,80 @@ function PlatformPage(){
 // ROI
 // ═══════════════════════════════════════
 function ROIPage(){
-  return <section style={{paddingTop:120,minHeight:"100vh",position:"relative",zIndex:1}}><div className="container">
-    <FadeIn><div style={{textAlign:"center",marginBottom:64}}>
+  const w=useWindowWidth();const isMob=w<=768;
+  return <section style={{paddingTop:isMob?80:120,minHeight:"100vh",position:"relative",zIndex:1}}><div className="container">
+    <FadeIn><div style={{textAlign:"center",marginBottom:isMob?40:64}}>
       <div className="badge" style={{background:B.green+"20",color:B.green,margin:"0 auto 16px"}}>Revenue Impact</div>
-      <h2 style={{fontSize:46,fontWeight:800,letterSpacing:"-1.5px",marginBottom:16}}>Product on Shelves. Revenue in the Register.</h2>
-      <p style={{fontSize:17,color:B.textMuted,maxWidth:620,margin:"0 auto"}}>Every missing carton is a product your customers can't buy. Lucidity ensures your inventory arrives complete, scanned, and shelf-ready — turning supply chain visibility into measurable top-line revenue.</p>
+      <h2 style={{fontSize:isMob?28:46,fontWeight:800,letterSpacing:"-1.5px",marginBottom:16}}>Product on Shelves. Revenue in the Register.</h2>
+      <p style={{fontSize:isMob?15:17,color:B.textMuted,maxWidth:620,margin:"0 auto"}}>Every missing carton is a product your customers can't buy. Lucidity ensures your inventory arrives complete, scanned, and shelf-ready — turning supply chain visibility into measurable top-line revenue.</p>
     </div></FadeIn>
 
-    <FadeIn><div style={{background:`linear-gradient(135deg, ${B.green}08, ${B.bgCard})`,border:`1px solid ${B.green}30`,borderRadius:24,padding:64,textAlign:"center",marginBottom:48}}>
-      <div style={{fontSize:14,color:B.green,textTransform:"uppercase",letterSpacing:2,fontWeight:600,marginBottom:12}}>Projected Additional Monthly Revenue per 100K Shipments</div>
-      <div style={{fontSize:72,fontWeight:900,fontFamily:"'Outfit'",color:B.green,letterSpacing:"-3px",lineHeight:1}}>
+    <FadeIn><div style={{background:`linear-gradient(135deg, ${B.green}08, ${B.bgCard})`,border:`1px solid ${B.green}30`,borderRadius:isMob?16:24,padding:w<=480?20:isMob?32:64,textAlign:"center",marginBottom:isMob?32:48}}>
+      <div style={{fontSize:isMob?12:14,color:B.green,textTransform:"uppercase",letterSpacing:isMob?1:2,fontWeight:600,marginBottom:12}}>Projected Additional Monthly Revenue per 100K Shipments</div>
+      <div style={{fontSize:w<=480?40:isMob?48:72,fontWeight:900,fontFamily:"'Outfit'",color:B.green,letterSpacing:"-2px",lineHeight:1}}>
         $<AnimatedCounter end={185000} duration={2500}/>
       </div>
-      <div style={{fontSize:16,color:B.textMuted,marginTop:12,maxWidth:500,margin:"12px auto 0"}}>in recovered product value — cartons that reach the shelf instead of becoming claims, shortages, or lost inventory</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4, 1fr)",gap:20,marginTop:40,maxWidth:800,margin:"40px auto 0"}}>
+      <div style={{fontSize:isMob?14:16,color:B.textMuted,marginTop:12,maxWidth:500,margin:"12px auto 0"}}>in recovered product value — cartons that reach the shelf instead of becoming claims, shortages, or lost inventory</div>
+      <RGrid cols="4" tabCols="4" mobCols="2" gap={isMob?12:20} style={{marginTop:32}}>
         {[
           {val:"99.7%",label:"Scan Accuracy at Store",color:B.accent},
           {val:"40%",label:"Reduction in Exceptions",color:B.orange},
           {val:"100%",label:"Carton-Level Accountability",color:B.green},
           {val:"48hr",label:"Avg Claim Resolution",color:B.cyan},
-        ].map((m,i)=><div key={i} className="stat-card" style={{textAlign:"center"}}><div style={{fontSize:24,fontWeight:800,fontFamily:"'Outfit'",color:m.color}}>{m.val}</div><div style={{fontSize:11,color:B.textDim,marginTop:4}}>{m.label}</div></div>)}
-      </div>
+        ].map((m,i)=><div key={i} className="stat-card" style={{textAlign:"center"}}><div style={{fontSize:isMob?20:24,fontWeight:800,fontFamily:"'Outfit'",color:m.color}}>{m.val}</div><div style={{fontSize:10,color:B.textDim,marginTop:4}}>{m.label}</div></div>)}
+      </RGrid>
     </div></FadeIn>
 
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:32,marginBottom:64}}>
+    <div style={{display:"grid",gridTemplateColumns:isMob?"1fr":"1fr 1fr",gap:isMob?20:32,marginBottom:isMob?40:64}}>
       <FadeIn><div className="card" style={{height:"100%"}}>
-        <h3 style={{fontSize:22,fontWeight:800,marginBottom:24,letterSpacing:"-0.5px"}}>How Lucidity Puts Product on Shelves</h3>
+        <h3 style={{fontSize:isMob?20:22,fontWeight:800,marginBottom:20}}>How Lucidity Puts Product on Shelves</h3>
         {[
           {title:"Carton-Level Scanning at Every Store",desc:"Every carton is scanned at the retail store location — not just at the DC. You know exactly what arrived, what's missing, and what's damaged before it becomes a problem."},
           {title:"Real-Time Exception Detection",desc:"OSD exceptions surface the moment they happen, not days later. Your team can act immediately — rerouting, re-shipping, or filing claims while the trail is fresh."},
           {title:"Carrier Accountability with Data",desc:"Rolling 6-month carrier performance scorecards give you the evidence to hold carriers accountable and negotiate better service levels."},
           {title:"Faster Claims, Faster Resolution",desc:"Automated claim workflows with full scan-event audit trails mean disputes resolve in hours, not weeks — getting replacement product moving immediately."},
-        ].map((item,i)=><div key={i} style={{marginBottom:i<3?24:0}}>
-          <div style={{display:"flex",gap:10,alignItems:"center",marginBottom:6}}><div style={{width:8,height:8,borderRadius:"50%",background:B.green}}/><h4 style={{fontSize:15,fontWeight:700}}>{item.title}</h4></div>
+        ].map((item,i)=><div key={i} style={{marginBottom:i<3?20:0}}>
+          <div style={{display:"flex",gap:10,alignItems:"center",marginBottom:6}}><div style={{width:8,height:8,borderRadius:"50%",background:B.green,flexShrink:0}}/><h4 style={{fontSize:14,fontWeight:700}}>{item.title}</h4></div>
           <p style={{fontSize:13,color:B.textMuted,lineHeight:1.7,paddingLeft:18}}>{item.desc}</p>
         </div>)}
       </div></FadeIn>
 
       <FadeIn delay={0.1}><div className="card" style={{height:"100%"}}>
-        <h3 style={{fontSize:22,fontWeight:800,marginBottom:24,letterSpacing:"-0.5px"}}>The Revenue Math</h3>
-        <div style={{background:B.surface,borderRadius:12,padding:24,marginBottom:24}}>
-          <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:16,alignItems:"center"}}>
+        <h3 style={{fontSize:isMob?20:22,fontWeight:800,marginBottom:20}}>The Revenue Math</h3>
+        <div style={{background:B.surface,borderRadius:12,padding:isMob?16:24,marginBottom:20}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:12,alignItems:"center"}}>
             <div style={{textAlign:"center"}}>
-              <div style={{fontSize:11,color:B.textDim,textTransform:"uppercase",letterSpacing:1,marginBottom:4}}>Without Lucidity</div>
-              <div style={{fontSize:28,fontWeight:800,fontFamily:"'Outfit'",color:B.red}}>3-5%</div>
-              <div style={{fontSize:12,color:B.textMuted}}>of shipments with exceptions</div>
+              <div style={{fontSize:10,color:B.textDim,textTransform:"uppercase",letterSpacing:1,marginBottom:4}}>Without Lucidity</div>
+              <div style={{fontSize:isMob?24:28,fontWeight:800,fontFamily:"'Outfit'",color:B.red}}>3-5%</div>
+              <div style={{fontSize:11,color:B.textMuted}}>exceptions</div>
             </div>
-            <div style={{fontSize:24,color:B.textDim}}>→</div>
+            <div style={{fontSize:20,color:B.textDim}}>→</div>
             <div style={{textAlign:"center"}}>
-              <div style={{fontSize:11,color:B.textDim,textTransform:"uppercase",letterSpacing:1,marginBottom:4}}>With Lucidity</div>
-              <div style={{fontSize:28,fontWeight:800,fontFamily:"'Outfit'",color:B.green}}>&lt;1%</div>
-              <div style={{fontSize:12,color:B.textMuted}}>of shipments with exceptions</div>
+              <div style={{fontSize:10,color:B.textDim,textTransform:"uppercase",letterSpacing:1,marginBottom:4}}>With Lucidity</div>
+              <div style={{fontSize:isMob?24:28,fontWeight:800,fontFamily:"'Outfit'",color:B.green}}>&lt;1%</div>
+              <div style={{fontSize:11,color:B.textMuted}}>exceptions</div>
             </div>
           </div>
         </div>
-        <div style={{fontSize:14,color:B.textMuted,lineHeight:1.8,marginBottom:20}}>For a retailer shipping 100,000 cartons per month at an average product value of $45 per carton:</div>
+        <div style={{fontSize:13,color:B.textMuted,lineHeight:1.8,marginBottom:16}}>For a retailer shipping 100,000 cartons per month at an average product value of $45 per carton:</div>
         {[
-          {label:"Cartons recovered from exceptions",value:"+4,000/mo",color:B.green},
-          {label:"Product value reaching shelves",value:"+$180,000/mo",color:B.green},
-          {label:"Available for customer purchase",value:"+$2.16M/yr",color:B.accent},
-        ].map((row,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:i<2?`1px solid ${B.border}`:"none"}}>
+          {label:"Cartons recovered",value:"+4,000/mo",color:B.green},
+          {label:"Product on shelves",value:"+$180,000/mo",color:B.green},
+          {label:"Annual revenue",value:"+$2.16M/yr",color:B.accent},
+        ].map((row,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:i<2?`1px solid ${B.border}`:"none"}}>
           <span style={{fontSize:13,color:B.textMuted}}>{row.label}</span>
-          <span style={{fontSize:15,fontWeight:700,fontFamily:"'Outfit'",color:row.color}}>{row.value}</span>
+          <span style={{fontSize:14,fontWeight:700,fontFamily:"'Outfit'",color:row.color}}>{row.value}</span>
         </div>)}
       </div></FadeIn>
     </div>
 
-    <FadeIn><div className="card" style={{overflow:"hidden",padding:0,marginBottom:48}}>
-      <div style={{padding:"24px 32px",borderBottom:`1px solid ${B.border}`}}><h3 style={{fontSize:20,fontWeight:700}}>Why Retailers Are Replacing Legacy Systems</h3></div>
-      <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:14}}>
+    <FadeIn><div className="card" style={{overflow:"hidden",padding:0,marginBottom:isMob?32:48}}>
+      <div style={{padding:isMob?"16px 20px":"24px 32px",borderBottom:`1px solid ${B.border}`}}><h3 style={{fontSize:isMob?18:20,fontWeight:700}}>Why Retailers Are Replacing Legacy Systems</h3></div>
+      <div style={{overflowX:"auto"}}><table style={{width:"100%",minWidth:500,borderCollapse:"collapse",fontSize:isMob?13:14}}>
         <thead><tr style={{background:B.surface}}>
-          <th style={{textAlign:"left",padding:"14px 32px",color:B.textMuted,fontWeight:600,fontSize:12,textTransform:"uppercase",letterSpacing:1}}>Capability</th>
-          <th style={{textAlign:"center",padding:"14px 24px",color:B.accent,fontWeight:700}}>Lucidity</th>
-          <th style={{textAlign:"center",padding:"14px 24px",color:B.textDim,fontWeight:600}}>Legacy TMS</th>
+          <th style={{textAlign:"left",padding:isMob?"12px 20px":"14px 32px",color:B.textMuted,fontWeight:600,fontSize:11,textTransform:"uppercase",letterSpacing:1}}>Capability</th>
+          <th style={{textAlign:"center",padding:"14px 16px",color:B.accent,fontWeight:700,fontSize:13}}>Lucidity</th>
+          <th style={{textAlign:"center",padding:"14px 16px",color:B.textDim,fontWeight:600,fontSize:13}}>Legacy</th>
         </tr></thead>
         <tbody>
           {[
@@ -445,48 +520,48 @@ function ROIPage(){
             ["Zero on-premise infrastructure required",true,false],
           ].map(([feature,lu,legacy],i)=>
             <tr key={i} style={{borderBottom:`1px solid ${B.border}`}}>
-              <td style={{padding:"12px 32px",color:B.textMuted}}>{feature}</td>
-              <td style={{padding:"12px 24px",textAlign:"center"}}>{lu?Ico.check:Ico.x}</td>
-              <td style={{padding:"12px 24px",textAlign:"center"}}>{legacy?Ico.check:Ico.x}</td>
+              <td style={{padding:isMob?"10px 20px":"12px 32px",color:B.textMuted}}>{feature}</td>
+              <td style={{padding:"12px 16px",textAlign:"center"}}>{lu?Ico.check:Ico.x}</td>
+              <td style={{padding:"12px 16px",textAlign:"center"}}>{legacy?Ico.check:Ico.x}</td>
             </tr>
           )}
         </tbody>
       </table></div>
     </div></FadeIn>
 
-    <FadeIn><div className="card" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:48,alignItems:"center",marginBottom:48}}>
+    <FadeIn><div className="card" style={{display:"grid",gridTemplateColumns:isMob?"1fr":"1fr 1fr",gap:isMob?24:48,alignItems:"center",marginBottom:isMob?32:48}}>
       <div>
         <div className="badge" style={{background:B.cyan+"15",color:B.cyan,marginBottom:16}}>Access Anywhere</div>
-        <h3 style={{fontSize:26,fontWeight:800,letterSpacing:"-0.5px",marginBottom:16}}>Your Data. Any Device. Any Location.</h3>
-        <p style={{fontSize:14,color:B.textMuted,lineHeight:1.8,marginBottom:24}}>Legacy systems chain your team to Windows workstations with manually installed servers. Lucidity is a modern web application — your operations data is accessible from any browser on any device, whether your team is at the DC, in the field, or reviewing performance from home.</p>
-        <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
-          {["Desktop","Laptop","Tablet","Mobile","Any OS","Any Browser"].map((d,i)=><div key={i} style={{background:B.surface,border:`1px solid ${B.border}`,borderRadius:8,padding:"8px 16px",fontSize:12,fontWeight:600,color:B.cyan}}>{d}</div>)}
+        <h3 style={{fontSize:isMob?22:26,fontWeight:800,letterSpacing:"-0.5px",marginBottom:16}}>Your Data. Any Device. Any Location.</h3>
+        <p style={{fontSize:14,color:B.textMuted,lineHeight:1.8,marginBottom:20}}>Legacy systems chain your team to Windows workstations with manually installed servers. Lucidity is a modern web application — your operations data is accessible from any browser on any device, whether your team is at the DC, in the field, or reviewing performance from home.</p>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          {["Desktop","Laptop","Tablet","Mobile","Any OS","Any Browser"].map((d,i)=><div key={i} style={{background:B.surface,border:`1px solid ${B.border}`,borderRadius:8,padding:"6px 12px",fontSize:11,fontWeight:600,color:B.cyan}}>{d}</div>)}
         </div>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+      <RGrid cols="2" tabCols="2" mobCols="1" gap={12}>
         {[
-          {label:"Legacy TMS",items:["Windows-only operating system","Server installed on each device","IT department required for setup","Desktop-bound access only","Version conflicts across locations"],color:B.red,icon:Ico.x},
-          {label:"Lucidity",items:["Works on any operating system","Zero installation required","Self-service user management","Access from any device, anywhere","Always the latest version"],color:B.green,icon:Ico.check},
-        ].map((col,i)=><div key={i} style={{background:B.surface,border:`1px solid ${col.color}22`,borderRadius:12,padding:20}}>
-          <div style={{fontSize:13,fontWeight:700,color:col.color,marginBottom:12,textTransform:"uppercase",letterSpacing:1}}>{col.label}</div>
-          {col.items.map((item,j)=><div key={j} style={{display:"flex",gap:8,alignItems:"center",padding:"5px 0"}}>
+          {label:"Legacy TMS",items:["Windows-only OS","Server per device","IT required","Desktop-bound","Version conflicts"],color:B.red,icon:Ico.x},
+          {label:"Lucidity",items:["Any OS","Zero install","Self-service","Any device","Always current"],color:B.green,icon:Ico.check},
+        ].map((col,i)=><div key={i} style={{background:B.surface,border:`1px solid ${col.color}22`,borderRadius:12,padding:16}}>
+          <div style={{fontSize:12,fontWeight:700,color:col.color,marginBottom:10,textTransform:"uppercase",letterSpacing:1}}>{col.label}</div>
+          {col.items.map((item,j)=><div key={j} style={{display:"flex",gap:8,alignItems:"center",padding:"4px 0"}}>
             <div style={{flexShrink:0}}>{col.icon}</div><span style={{fontSize:12,color:B.textMuted}}>{item}</span>
           </div>)}
         </div>)}
-      </div>
+      </RGrid>
     </div></FadeIn>
 
-    <div style={{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:24,marginBottom:80}}>
+    <RGrid cols="3" tabCols="3" mobCols="1" gap={isMob?16:24} style={{marginBottom:isMob?48:80}}>
       {[
         {title:"Product on Shelves",desc:"Every carton that arrives complete is a product available for purchase. Lucidity's store-level scanning ensures your inventory reaches the shelf — not the claims queue.",color:B.green},
-        {title:"Operational Efficiency",desc:"Eliminate the hours spent chasing shipments across carrier portals, manually filing claims, and reconciling data in spreadsheets. Your team focuses on strategy, not status calls.",color:B.accent},
-        {title:"Carrier Accountability",desc:"Data-driven carrier scorecards replace gut feelings with evidence. Negotiate from a position of strength with rolling 6-month performance metrics across your entire network.",color:B.orange},
+        {title:"Operational Efficiency",desc:"Eliminate the hours spent chasing shipments across carrier portals, manually filing claims, and reconciling data in spreadsheets.",color:B.accent},
+        {title:"Carrier Accountability",desc:"Data-driven carrier scorecards replace gut feelings with evidence. Negotiate from a position of strength with rolling 6-month performance metrics.",color:B.orange},
       ].map((col,i)=>
-        <FadeIn key={i} delay={i*0.1}><div className="card" style={{height:"100%"}}><h4 style={{fontSize:16,fontWeight:700,color:col.color,marginBottom:12}}>{col.title}</h4>
+        <FadeIn key={i} delay={i*0.08}><div className="card" style={{height:"100%"}}><h4 style={{fontSize:15,fontWeight:700,color:col.color,marginBottom:10}}>{col.title}</h4>
           <p style={{fontSize:13,color:B.textMuted,lineHeight:1.7}}>{col.desc}</p>
         </div></FadeIn>
       )}
-    </div>
+    </RGrid>
   </div></section>;
 }
 
@@ -494,53 +569,54 @@ function ROIPage(){
 // SOLUTIONS
 // ═══════════════════════════════════════
 function SolutionsPage(){
+  const w=useWindowWidth();const isMob=w<=768;
   const[activeSol,setActiveSol]=useState(0);
   const solutions=[
-    {title:"Enterprise Retail Shippers",subtitle:"Full network visibility from distribution center to every store.",icon:Ico.globe,color:B.accent,
-      pain:["Fragmented carrier visibility across dozens of regional carriers","Manual claim filing and dispute resolution consuming operations bandwidth","No carton-level accountability — exceptions discovered at the dock, not in transit","Per-carrier TMS licensing creating unpredictable cost scaling"],
+    {title:"Enterprise Retail Shippers",subtitle:"Full network visibility from DC to every store.",icon:Ico.globe,color:B.accent,
+      pain:["Fragmented carrier visibility across dozens of regional carriers","Manual claim filing consuming operations bandwidth","No carton-level accountability — exceptions discovered at the dock","Per-carrier TMS licensing creating unpredictable cost scaling"],
       solution:["Unified visibility across all carriers, regions, and modes","Automated OSD exception detection with one-click claim filing","5-stage carton-level scan timeline providing full chain of custody","Single per-carton pricing that scales predictably with volume"],
-      outcomes:[{metric:"40%",label:"Reduction in claims"},{metric:"99%",label:"Scan accuracy"},{metric:"60%",label:"Faster resolution"},{metric:"$2.16M",label:"Annual revenue recovered"}]},
+      outcomes:[{metric:"40%",label:"Fewer claims"},{metric:"99%",label:"Scan accuracy"},{metric:"60%",label:"Faster resolution"},{metric:"$2.16M",label:"Revenue recovered"}]},
     {title:"National & Regional Carriers",subtitle:"Prove your performance. Win more business.",icon:Ico.track,color:B.green,
-      pain:["No standardized way to demonstrate delivery performance to shippers","Reactive claim disputes with no scan-event evidence trail","Manual data reconciliation consuming driver and warehouse time","Limited visibility into load-level accuracy metrics"],
-      solution:["Carrier performance scorecards with rolling 6-month statistics","Full scan event timeline providing auditable proof for every dispute","API and EDI integration for seamless data exchange","Real-time accuracy scoring: Expected / (Expected + Overages + Shortages)"],
-      outcomes:[{metric:"95%",label:"Dispute win rate"},{metric:"2x",label:"Faster onboarding"},{metric:"50%",label:"Less manual reconciliation"},{metric:"6-mo",label:"Performance trending"}]},
+      pain:["No standardized way to demonstrate delivery performance","Reactive claim disputes with no evidence trail","Manual data reconciliation consuming warehouse time","Limited visibility into load-level accuracy metrics"],
+      solution:["Carrier performance scorecards with rolling 6-month statistics","Full scan event timeline providing auditable proof for every dispute","API and EDI integration for seamless data exchange","Real-time accuracy scoring"],
+      outcomes:[{metric:"95%",label:"Dispute win rate"},{metric:"2x",label:"Faster onboarding"},{metric:"50%",label:"Less reconciliation"},{metric:"6-mo",label:"Trending"}]},
     {title:"Distribution Operations",subtitle:"From data ingest to proof of delivery — every step tracked.",icon:Ico.zap,color:B.orange,
-      pain:["Shipment data arriving in different formats from different vendors","No real-time scan progress visibility during load building","OSD exceptions discovered too late to take corrective action","Proof of delivery fragmented across carrier-specific portals"],
-      solution:["Flexible data ingestion through API, EDI, SFTP, or CSV upload","Live scan progress: Loaded → Unloaded → Integrity Check → Out for Delivery → Delivered","Real-time exception cards for overages, shortages, and damages per load","Unified proof of delivery: signee, signature, photos, notes in one drawer"],
-      outcomes:[{metric:"97%",label:"Data integration rate"},{metric:"5",label:"Scan stages tracked"},{metric:"Real-time",label:"Exception alerts"},{metric:"1 portal",label:"All POD data"}]},
+      pain:["Data arriving in different formats from different vendors","No real-time scan progress during load building","OSD exceptions discovered too late to act","POD fragmented across carrier portals"],
+      solution:["Flexible ingestion through API, EDI, SFTP, or CSV","Live scan progress across 5 stages","Real-time exception cards per load","Unified POD: signee, signature, photos, notes"],
+      outcomes:[{metric:"97%",label:"Integration rate"},{metric:"5",label:"Scan stages"},{metric:"Real-time",label:"Exception alerts"},{metric:"1 portal",label:"All POD data"}]},
   ];
   const s=solutions[activeSol];
-  return <section style={{paddingTop:120,minHeight:"100vh",position:"relative",zIndex:1}}><div className="container">
-    <FadeIn><div style={{textAlign:"center",marginBottom:48}}>
+  return <section style={{paddingTop:isMob?80:120,minHeight:"100vh",position:"relative",zIndex:1}}><div className="container">
+    <FadeIn><div style={{textAlign:"center",marginBottom:isMob?32:48}}>
       <div className="badge" style={{background:B.accent+"15",color:B.accent,margin:"0 auto 16px"}}>Solutions</div>
-      <h2 style={{fontSize:46,fontWeight:800,letterSpacing:"-1.5px",marginBottom:16}}>Built for How You Operate</h2>
-      <p style={{fontSize:17,color:B.textMuted,maxWidth:580,margin:"0 auto"}}>Whether you're a shipper managing a national carrier network, a carrier proving performance, or an operations team demanding real-time accuracy — Lucidity is engineered for you.</p>
+      <h2 style={{fontSize:isMob?28:46,fontWeight:800,letterSpacing:"-1.5px",marginBottom:16}}>Built for How You Operate</h2>
+      <p style={{fontSize:isMob?15:17,color:B.textMuted,maxWidth:580,margin:"0 auto"}}>Whether you're a shipper, carrier, or operations team — Lucidity is engineered for you.</p>
     </div></FadeIn>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:16,marginBottom:48}}>
-      {solutions.map((sol,i)=><div key={i} onClick={()=>setActiveSol(i)} style={{background:activeSol===i?`${sol.color}10`:B.bgCard,border:`1.5px solid ${activeSol===i?sol.color+"44":B.border}`,borderRadius:14,padding:24,cursor:"pointer",transition:"all 0.3s"}}>
-        <div style={{marginBottom:12}}>{sol.icon}</div><h4 style={{fontSize:16,fontWeight:700,marginBottom:4}}>{sol.title}</h4><p style={{fontSize:12,color:B.textDim}}>{sol.subtitle}</p>
+    <RGrid cols="3" tabCols="3" mobCols="1" gap={isMob?12:16} style={{marginBottom:isMob?32:48}}>
+      {solutions.map((sol,i)=><div key={i} onClick={()=>setActiveSol(i)} style={{background:activeSol===i?`${sol.color}10`:B.bgCard,border:`1.5px solid ${activeSol===i?sol.color+"44":B.border}`,borderRadius:14,padding:isMob?16:24,cursor:"pointer",transition:"all 0.3s"}}>
+        <div style={{marginBottom:8}}>{sol.icon}</div><h4 style={{fontSize:15,fontWeight:700,marginBottom:4}}>{sol.title}</h4><p style={{fontSize:12,color:B.textDim}}>{sol.subtitle}</p>
       </div>)}
-    </div>
+    </RGrid>
     <div key={activeSol} style={{animation:"slideIn 0.4s ease"}}>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:32,marginBottom:48}}>
-        <div className="card"><h4 style={{fontSize:14,fontWeight:700,color:B.red,textTransform:"uppercase",letterSpacing:1,marginBottom:20}}>The Challenge</h4>
-          {s.pain.map((p,i)=><div key={i} style={{display:"flex",gap:12,alignItems:"flex-start",padding:"10px 0",borderBottom:i<s.pain.length-1?`1px solid ${B.border}`:"none"}}><div style={{marginTop:3}}>{Ico.x}</div><span style={{fontSize:13,color:B.textMuted,lineHeight:1.6}}>{p}</span></div>)}
+      <div style={{display:"grid",gridTemplateColumns:isMob?"1fr":"1fr 1fr",gap:isMob?20:32,marginBottom:isMob?32:48}}>
+        <div className="card"><h4 style={{fontSize:13,fontWeight:700,color:B.red,textTransform:"uppercase",letterSpacing:1,marginBottom:16}}>The Challenge</h4>
+          {s.pain.map((p,i)=><div key={i} style={{display:"flex",gap:10,alignItems:"flex-start",padding:"8px 0",borderBottom:i<s.pain.length-1?`1px solid ${B.border}`:"none"}}><div style={{marginTop:3,flexShrink:0}}>{Ico.x}</div><span style={{fontSize:13,color:B.textMuted,lineHeight:1.6}}>{p}</span></div>)}
         </div>
-        <div className="card" style={{borderColor:s.color+"30"}}><h4 style={{fontSize:14,fontWeight:700,color:s.color,textTransform:"uppercase",letterSpacing:1,marginBottom:20}}>The Lucidity Solution</h4>
-          {s.solution.map((p,i)=><div key={i} style={{display:"flex",gap:12,alignItems:"flex-start",padding:"10px 0",borderBottom:i<s.solution.length-1?`1px solid ${B.border}`:"none"}}><div style={{marginTop:3}}>{Ico.check}</div><span style={{fontSize:13,color:B.textMuted,lineHeight:1.6}}>{p}</span></div>)}
+        <div className="card" style={{borderColor:s.color+"30"}}><h4 style={{fontSize:13,fontWeight:700,color:s.color,textTransform:"uppercase",letterSpacing:1,marginBottom:16}}>The Lucidity Solution</h4>
+          {s.solution.map((p,i)=><div key={i} style={{display:"flex",gap:10,alignItems:"flex-start",padding:"8px 0",borderBottom:i<s.solution.length-1?`1px solid ${B.border}`:"none"}}><div style={{marginTop:3,flexShrink:0}}>{Ico.check}</div><span style={{fontSize:13,color:B.textMuted,lineHeight:1.6}}>{p}</span></div>)}
         </div>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4, 1fr)",gap:20,marginBottom:80}}>
-        {s.outcomes.map((o,i)=><FadeIn key={i} delay={i*0.08}><div className="stat-card" style={{textAlign:"center",padding:28}}><div style={{fontSize:36,fontWeight:900,fontFamily:"'Outfit'",color:s.color,marginBottom:4}}>{o.metric}</div><div style={{fontSize:12,color:B.textDim}}>{o.label}</div></div></FadeIn>)}
-      </div>
+      <RGrid cols="4" tabCols="4" mobCols="2" gap={isMob?12:20} style={{marginBottom:isMob?48:80}}>
+        {s.outcomes.map((o,i)=><FadeIn key={i} delay={i*0.06}><div className="stat-card" style={{textAlign:"center",padding:isMob?20:28}}><div style={{fontSize:isMob?28:36,fontWeight:900,fontFamily:"'Outfit'",color:s.color,marginBottom:4}}>{o.metric}</div><div style={{fontSize:11,color:B.textDim}}>{o.label}</div></div></FadeIn>)}
+      </RGrid>
     </div>
-    <FadeIn><div className="card" style={{padding:48,marginBottom:80}}>
-      <h3 style={{fontSize:26,fontWeight:800,textAlign:"center",marginBottom:40,letterSpacing:"-0.5px"}}>Why Enterprises Are Moving Beyond Legacy TMS</h3>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3, 1fr)",gap:32}}>
-        <div style={{textAlign:"center"}}><Donut value={73} label="Lack Real-Time Visibility" color={B.red} size={120}/><p style={{fontSize:12,color:B.textDim,marginTop:8}}>of shippers report blind spots in their supply chain</p></div>
-        <div style={{textAlign:"center"}}><Donut value={62} label="Manual Exception Handling" color={B.orange} size={120}/><p style={{fontSize:12,color:B.textDim,marginTop:8}}>still process OSD claims via email and spreadsheets</p></div>
-        <div style={{textAlign:"center"}}><Donut value={85} label="Want Unified Platform" color={B.green} size={120}/><p style={{fontSize:12,color:B.textDim,marginTop:8}}>of logistics leaders seeking single-pane-of-glass solutions</p></div>
-      </div>
+    <FadeIn><div className="card" style={{padding:isMob?24:48,marginBottom:isMob?48:80}}>
+      <h3 style={{fontSize:isMob?22:26,fontWeight:800,textAlign:"center",marginBottom:32}}>Why Enterprises Are Moving Beyond Legacy TMS</h3>
+      <RGrid cols="3" tabCols="3" mobCols="1" gap={isMob?24:32}>
+        <div style={{textAlign:"center"}}><Donut value={73} label="Lack Real-Time Visibility" color={B.red} size={isMob?100:120}/><p style={{fontSize:12,color:B.textDim,marginTop:8}}>of shippers report blind spots</p></div>
+        <div style={{textAlign:"center"}}><Donut value={62} label="Manual Exception Handling" color={B.orange} size={isMob?100:120}/><p style={{fontSize:12,color:B.textDim,marginTop:8}}>still process claims via email</p></div>
+        <div style={{textAlign:"center"}}><Donut value={85} label="Want Unified Platform" color={B.green} size={isMob?100:120}/><p style={{fontSize:12,color:B.textDim,marginTop:8}}>seeking single-pane-of-glass</p></div>
+      </RGrid>
     </div></FadeIn>
   </div></section>;
 }
@@ -549,45 +625,46 @@ function SolutionsPage(){
 // CONTACT
 // ═══════════════════════════════════════
 function ContactPage(){
+  const w=useWindowWidth();const isMob=w<=768;
   const[submitted,setSubmitted]=useState(false);
-  return <section style={{paddingTop:120,minHeight:"100vh",position:"relative",zIndex:1}}><div className="container">
-    <FadeIn><div style={{textAlign:"center",marginBottom:64}}>
+  return <section style={{paddingTop:isMob?80:120,minHeight:"100vh",position:"relative",zIndex:1}}><div className="container">
+    <FadeIn><div style={{textAlign:"center",marginBottom:isMob?40:64}}>
       <div className="badge" style={{background:B.accent+"15",color:B.accent,margin:"0 auto 16px"}}>Get In Touch</div>
-      <h2 style={{fontSize:46,fontWeight:800,letterSpacing:"-1.5px",marginBottom:16}}>Let's Engineer Your Supply Chain</h2>
-      <p style={{fontSize:17,color:B.textMuted,maxWidth:520,margin:"0 auto"}}>Our team will assess your operation and deliver a customized implementation roadmap built around your network.</p>
+      <h2 style={{fontSize:isMob?28:46,fontWeight:800,letterSpacing:"-1.5px",marginBottom:16}}>Let's Engineer Your Supply Chain</h2>
+      <p style={{fontSize:isMob?15:17,color:B.textMuted,maxWidth:520,margin:"0 auto"}}>Our team will assess your operation and deliver a customized implementation roadmap built around your network.</p>
     </div></FadeIn>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:48,marginBottom:80}}>
+    <div style={{display:"grid",gridTemplateColumns:isMob?"1fr":"1fr 1fr",gap:isMob?24:48,marginBottom:isMob?48:80}}>
       <FadeIn><div className="card">
         {!submitted?<>
-          <h3 style={{fontSize:20,fontWeight:700,marginBottom:28}}>Request a Demo</h3>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}><input className="input" placeholder="First Name"/><input className="input" placeholder="Last Name"/></div>
-          <input className="input" placeholder="Work Email" style={{marginBottom:16}}/>
-          <input className="input" placeholder="Company" style={{marginBottom:16}}/>
-          <input className="input" placeholder="Job Title" style={{marginBottom:16}}/>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:16}}><input className="input" placeholder="Monthly Shipment Volume"/><input className="input" placeholder="Number of Carriers"/></div>
-          <textarea className="input" placeholder="Tell us about your current supply chain challenges..." rows={4} style={{resize:"vertical",marginBottom:24}}/>
-          <button className="btn-primary" style={{width:"100%",justifyContent:"center"}} onClick={()=>setSubmitted(true)}>Submit Request {Ico.arrow("white")}</button>
-        </>:<div style={{textAlign:"center",padding:"48px 0"}}>
-          <div style={{width:64,height:64,borderRadius:"50%",margin:"0 auto 20px",background:B.green+"20",display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={B.green} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          <h3 style={{fontSize:18,fontWeight:700,marginBottom:24}}>Request a Demo</h3>
+          <div style={{display:"grid",gridTemplateColumns:isMob?"1fr":"1fr 1fr",gap:14,marginBottom:14}}><input className="input" placeholder="First Name"/><input className="input" placeholder="Last Name"/></div>
+          <input className="input" placeholder="Work Email" style={{marginBottom:14}}/>
+          <input className="input" placeholder="Company" style={{marginBottom:14}}/>
+          <input className="input" placeholder="Job Title" style={{marginBottom:14}}/>
+          <div style={{display:"grid",gridTemplateColumns:isMob?"1fr":"1fr 1fr",gap:14,marginBottom:14}}><input className="input" placeholder="Monthly Shipment Volume"/><input className="input" placeholder="Number of Carriers"/></div>
+          <textarea className="input" placeholder="Tell us about your current supply chain challenges..." rows={4} style={{resize:"vertical",marginBottom:20}}/>
+          <button className="btn-primary" style={{width:"100%",justifyContent:"center"}} onClick={()=>{setSubmitted(true);window.open(CALENDLY,"_blank");}}>Submit Request {Ico.arrow("white")}</button>
+        </>:<div style={{textAlign:"center",padding:"40px 0"}}>
+          <div style={{width:56,height:56,borderRadius:"50%",margin:"0 auto 16px",background:B.green+"20",display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={B.green} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
-          <h3 style={{fontSize:22,fontWeight:700,marginBottom:8}}>Request Received</h3>
-          <p style={{fontSize:14,color:B.textMuted}}>Our team will reach out within 24 hours to schedule your demo.</p>
+          <h3 style={{fontSize:20,fontWeight:700,marginBottom:8}}>Request Received</h3>
+          <p style={{fontSize:14,color:B.textMuted}}>Our team will reach out within 24 hours.</p>
         </div>}
       </div></FadeIn>
-      <FadeIn delay={0.15}><div style={{display:"flex",flexDirection:"column",gap:20}}>
-        {[{title:"Dedicated Implementation",desc:"Every Lucidity deployment includes a dedicated implementation engineer who maps your carrier network, configures integrations, and validates end-to-end before go-live.",icon:Ico.shield},
-          {title:"Flexible Integration",desc:"Connect through REST APIs, EDI file handling, or SFTP automation. Our team engineers the integration approach that fits your carriers and your operation.",icon:Ico.analytics},
+      <FadeIn delay={0.15}><div style={{display:"flex",flexDirection:"column",gap:16}}>
+        {[{title:"Dedicated Implementation",desc:"Every deployment includes a dedicated implementation engineer who maps your carrier network, configures integrations, and validates end-to-end before go-live.",icon:Ico.shield},
+          {title:"Flexible Integration",desc:"Connect through REST APIs, EDI file handling, or SFTP automation. Our team engineers the approach that fits your carriers and operation.",icon:Ico.analytics},
           {title:"Enterprise Security",desc:"SOC 2 compliant infrastructure, role-based access controls, encrypted data at rest and in transit, and secure connectivity for automated data exchange.",icon:Ico.control}
-        ].map((item,i)=><div key={i} className="card" style={{display:"flex",gap:20,alignItems:"flex-start"}}>
-          <div style={{width:48,height:48,borderRadius:12,flexShrink:0,background:B.accent+"12",display:"flex",alignItems:"center",justifyContent:"center"}}>{item.icon}</div>
-          <div><h4 style={{fontSize:16,fontWeight:700,marginBottom:6}}>{item.title}</h4><p style={{fontSize:13,color:B.textMuted,lineHeight:1.7}}>{item.desc}</p></div>
+        ].map((item,i)=><div key={i} className="card" style={{display:"flex",gap:16,alignItems:"flex-start"}}>
+          <div style={{width:44,height:44,borderRadius:12,flexShrink:0,background:B.accent+"12",display:"flex",alignItems:"center",justifyContent:"center"}}>{item.icon}</div>
+          <div><h4 style={{fontSize:15,fontWeight:700,marginBottom:4}}>{item.title}</h4><p style={{fontSize:13,color:B.textMuted,lineHeight:1.7}}>{item.desc}</p></div>
         </div>)}
         <div className="card" style={{background:`linear-gradient(135deg, ${B.accent}10, ${B.bgCard})`,borderColor:B.accent+"30"}}>
-          <div style={{fontSize:14,fontWeight:700,marginBottom:12}}>Visit us online</div>
+          <div style={{fontSize:14,fontWeight:700,marginBottom:10}}>Visit us online</div>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:36,height:36,borderRadius:10,background:`linear-gradient(135deg, ${B.accent}, ${B.accentLight})`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Outfit', sans-serif",fontWeight:800,fontSize:16,color:"white"}}>L</div>
-            <span style={{fontSize:18,fontWeight:600,color:B.accent}}>lu.app</span>
+            <div style={{width:32,height:32,borderRadius:8,background:`linear-gradient(135deg, ${B.accent}, ${B.accentLight})`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Outfit', sans-serif",fontWeight:800,fontSize:14,color:"white"}}>L</div>
+            <span style={{fontSize:16,fontWeight:600,color:B.accent}}>lu.app</span>
           </div>
         </div>
       </div></FadeIn>
@@ -599,28 +676,32 @@ function ContactPage(){
 // FOOTER
 // ═══════════════════════════════════════
 function Footer({setActive}){
-  return <footer style={{borderTop:`1px solid ${B.border}`,padding:"64px 0 40px",position:"relative",zIndex:1}}><div className="container">
-    <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",gap:48,marginBottom:48}}>
-      <div>
-        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
-          <div style={{width:32,height:32,borderRadius:8,background:`linear-gradient(135deg, ${B.accent}, ${B.accentLight})`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Outfit', sans-serif",fontWeight:800,fontSize:15,color:"white"}}>L</div>
-          <span style={{fontFamily:"'Outfit', sans-serif",fontWeight:700,fontSize:18}}>Lucidity</span>
+  const w=useWindowWidth();const isMob=w<=768;
+  return <footer style={{borderTop:`1px solid ${B.border}`,padding:isMob?"40px 0 32px":"64px 0 40px",position:"relative",zIndex:1}}><div className="container">
+    <div style={{display:"grid",gridTemplateColumns:isMob?"1fr 1fr":"2fr 1fr 1fr 1fr",gap:isMob?24:48,marginBottom:isMob?32:48}}>
+      <div style={{gridColumn:isMob?"1 / -1":"auto"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+          <div style={{width:28,height:28,borderRadius:7,background:`linear-gradient(135deg, ${B.accent}, ${B.accentLight})`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Outfit', sans-serif",fontWeight:800,fontSize:13,color:"white"}}>L</div>
+          <span style={{fontFamily:"'Outfit', sans-serif",fontWeight:700,fontSize:16}}>Lucidity</span>
         </div>
-        <p style={{fontSize:13,color:B.textDim,lineHeight:1.7,maxWidth:300}}>Enterprise supply chain visibility platform. Total visibility. Complete control. Product on shelves.</p>
+        <p style={{fontSize:12,color:B.textDim,lineHeight:1.7,maxWidth:280}}>Enterprise supply chain visibility platform. Total visibility. Complete control. Product on shelves.</p>
       </div>
       {[{title:"Platform",links:["Operations Dashboard","Outbound Loads","Shipment Search","Claims","Organization"]},{title:"Company",links:["About","Careers","Security","Contact"]},{title:"Resources",links:["Documentation","API Reference","Training Guides","Blog"]}].map((col,i)=>
-        <div key={i}><h4 style={{fontSize:13,fontWeight:700,color:B.text,marginBottom:16,textTransform:"uppercase",letterSpacing:1}}>{col.title}</h4>
-          {col.links.map((link,j)=><div key={j} style={{fontSize:13,color:B.textDim,padding:"6px 0",cursor:"pointer"}}>{link}</div>)}
+        <div key={i}><h4 style={{fontSize:12,fontWeight:700,color:B.text,marginBottom:12,textTransform:"uppercase",letterSpacing:1}}>{col.title}</h4>
+          {col.links.map((link,j)=><div key={j} style={{fontSize:12,color:B.textDim,padding:"5px 0",cursor:"pointer"}}>{link}</div>)}
         </div>
       )}
     </div>
-    <div style={{borderTop:`1px solid ${B.border}`,paddingTop:24,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-      <span style={{fontSize:12,color:B.textDim}}>&copy; {new Date().getFullYear()} Lucidity (lu.app). All rights reserved.</span>
-      <div style={{display:"flex",gap:24}}>{["Privacy","Terms","Security"].map((l,i)=><span key={i} style={{fontSize:12,color:B.textDim,cursor:"pointer"}}>{l}</span>)}</div>
+    <div style={{borderTop:`1px solid ${B.border}`,paddingTop:20,display:"flex",flexDirection:isMob?"column":"row",gap:isMob?8:0,justifyContent:"space-between",alignItems:isMob?"flex-start":"center"}}>
+      <span style={{fontSize:11,color:B.textDim}}>&copy; {new Date().getFullYear()} Lucidity (lu.app). All rights reserved.</span>
+      <div style={{display:"flex",gap:20}}>{["Privacy","Terms","Security"].map((l,i)=><span key={i} style={{fontSize:11,color:B.textDim,cursor:"pointer"}}>{l}</span>)}</div>
     </div>
   </div></footer>;
 }
 
+// ═══════════════════════════════════════
+// APP
+// ═══════════════════════════════════════
 function App(){
   const[activePage,setActivePage]=useState(0);
   const pages=[HomePage,PlatformPage,ROIPage,SolutionsPage,ContactPage];
