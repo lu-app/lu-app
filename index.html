@@ -221,12 +221,12 @@ function Nav({active,setActive}){
         {!isMobile ? (
           <div style={{display:"flex",gap:28,alignItems:"center"}}>
             {NAV_ITEMS.map((item,i)=><button key={item} className={`nav-link${active===i?" active":""}`} onClick={()=>{setActive(i);window.scrollTo({top:0,behavior:"smooth"});}}>{item}</button>)}
-            <button className="btn-ghost" onClick={()=>window.open("https://lu.app","_blank")}>Log In</button>
+            <button className="btn-ghost" onClick={()=>window.open("https://lucidity.lu.app","_blank")}>Log In</button>
             <button className="btn-primary" style={{padding:"10px 24px",fontSize:13}} onClick={()=>window.open(CALENDLY,"_blank")}>Request Demo</button>
           </div>
         ) : (
           <div style={{display:"flex",gap:10,alignItems:"center"}}>
-            <button className="btn-ghost" style={{padding:"8px 14px",fontSize:12}} onClick={()=>window.open("https://lu.app","_blank")}>Log In</button>
+            <button className="btn-ghost" style={{padding:"8px 14px",fontSize:12}} onClick={()=>window.open("https://lucidity.lu.app","_blank")}>Log In</button>
             <button onClick={()=>setMenuOpen(!menuOpen)} style={{background:"none",border:"none",cursor:"pointer",padding:8}}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={B.text} strokeWidth="2" strokeLinecap="round">
                 {menuOpen?<><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>:<><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></>}
